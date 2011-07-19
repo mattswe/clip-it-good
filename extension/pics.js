@@ -10,7 +10,7 @@
  * @param {boolean?} opt_starred Whether the document should be starred.
  * @return {string} The Atom xml as a string.
  */
-function constructAtomXml_(docTitle, docType, opt_starred) {
+function constructAtomXml_(docTitle, docType, docSummary) {
   var starred = opt_starred || null;
  
   var starCat = ['<category scheme="http://schemas.google.com/g/2005/labels" ',
@@ -19,10 +19,11 @@ function constructAtomXml_(docTitle, docType, opt_starred) {
  
   var atom = ["<?xml version='1.0' encoding='UTF-8'?>", 
               '<entry xmlns="http://www.w3.org/2005/Atom">',
+              '<title>', docTitle, '</title>',
+              '<summary>', docSummary, '</summary>',
               '<category scheme="http://schemas.google.com/g/2005#kind"', 
               ' term="http://schemas.google.com/docs/2007#', docType, '"/>',
               starred ? starCat : '',
-              '<title>', docTitle, '</title>',
               '</entry>'].join('');
   return atom;
 };

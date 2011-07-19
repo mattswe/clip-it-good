@@ -122,13 +122,15 @@
           {
             method: 'POST',
             headers: {
-              'Content-Type': 'image/png',
-              'Slug': data.srcUrl
+              'Content-Type': 'multipart/related; boundary=END_OF_PART'
+              'Content-Length': '423478347'
+              'MIME-version': '1.0'
             },
             parameters: {
               alt: 'json'
             },
-            body: builder.getBlob('image/png')
+            body: constructContentBody_('title.jpg', 'photo', content,
+                                        DEFAULT_MIMETYPES[docType], starred)
           }
         );
       });
