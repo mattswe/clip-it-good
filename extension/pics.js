@@ -11,19 +11,12 @@
  * @return {string} The Atom xml as a string.
  */
 function constructAtomXml_(docTitle, docType, docSummary) {
-  var starred = opt_starred || null;
- 
-  var starCat = ['<category scheme="http://schemas.google.com/g/2005/labels" ',
-                 'term="http://schemas.google.com/g/2005/labels#starred" ',
-                 'label="starred"/>'].join('');
- 
-  var atom = ["<?xml version='1.0' encoding='UTF-8'?>", 
+  var atom = ["<?xml version='1.0' encoding='UTF-8'?>",
               '<entry xmlns="http://www.w3.org/2005/Atom">',
               '<title>', docTitle, '</title>',
               '<summary>', docSummary, '</summary>',
               '<category scheme="http://schemas.google.com/g/2005#kind"', 
               ' term="http://schemas.google.com/docs/2007#', docType, '"/>',
-              starred ? starCat : '',
               '</entry>'].join('');
   return atom;
 };
@@ -39,42 +32,13 @@ function constructAtomXml_(docTitle, docType, docSummary) {
  * @param {boolean?} opt_starred Whether the document should be starred.
  * @return {string} The Atom xml as a string.
  */
-function constructContentBody_(title, docType, body, contentType, opt_starred) {
+function constructContentBody_(title, docType, body, contentType, summary) {
   var body_ = ['--END_OF_PART\r\n',
               'Content-Type: application/atom+xml;\r\n\r\n',
-              gdocs.constructAtomXml_(title, docType, opt_starred), '\r\n',
+              constructAtomXml_(title, docType, summary), '\r\n',
               '--END_OF_PART\r\n',
               'Content-Type: ', contentType, '\r\n\r\n',
-              body, '\r\n',
+              eval(body), '\r\n',
               '--END_OF_PART--\r\n'].join('');
   return body_;
-};
-
-/**
- * Creates a new document in Google Docs.
- * docType= {document,presentation,spreadsheet}
- */
-function createDoc(title, content, starred, docType, cb) {
-  if (!title) {
-    return;
-  }
-
-  var handleSuccess = function(googleDocObj, xhr) {
-	docs.splice(0, 0, googleDocObj);
-    requestFailureCount = 0;
-	cb(googleDocObj);
-  };
-
-  var params = {
-    'method': 'POST',
-    'headers': {
-      'GData-Version': '3.0',
-      'Content-Type': 'multipart/related; boundary=END_OF_PART'
-    },
-    'parameters': {'alt': 'json'},
-    'body': gdocs.constructContentBody_(title, docType, content,
-                                        DEFAULT_MIMETYPES[docType], starred)
-  };
-
-  sendSignedRequest(DOCLIST_FEED, handleSuccess, params);
 };

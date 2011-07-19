@@ -122,15 +122,16 @@
           {
             method: 'POST',
             headers: {
-              'Content-Type': 'multipart/related; boundary=END_OF_PART'
-              'Content-Length': '423478347'
+              'Content-Type': 'multipart/related; boundary=END_OF_PART',
+              'Content-Length': '6679239',
               'MIME-version': '1.0'
             },
             parameters: {
               alt: 'json'
             },
-            body: constructContentBody_('title.jpg', 'photo', content,
-                                        DEFAULT_MIMETYPES[docType], starred)
+            body: constructContentBody_('title.jpg', 'photo',
+                                        builder.getBlob('image/png'),
+                                        'image/jpeg', 'lolcatz')
           }
         );
       });
