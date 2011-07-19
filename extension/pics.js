@@ -2,6 +2,32 @@
 // http://src.chromium.org/svn/trunk/src/chrome/common/extensions/docs/examples/extensions/gdocs/
 
 /**
+ * A helper for constructing the raw Atom xml send in the body of an HTTP post.
+ * @param {XMLHttpRequest} xhr The xhr request that failed.
+ * @param {string} docTitle A title for the document.
+ * @param {string} docType The type of document to create.
+ *     (eg. 'document', 'spreadsheet', etc.)
+ * @param {boolean?} opt_starred Whether the document should be starred.
+ * @return {string} The Atom xml as a string.
+ */
+function constructAtomXml_(docTitle, docType, opt_starred) {
+  var starred = opt_starred || null;
+ 
+  var starCat = ['<category scheme="http://schemas.google.com/g/2005/labels" ',
+                 'term="http://schemas.google.com/g/2005/labels#starred" ',
+                 'label="starred"/>'].join('');
+ 
+  var atom = ["<?xml version='1.0' encoding='UTF-8'?>", 
+              '<entry xmlns="http://www.w3.org/2005/Atom">',
+              '<category scheme="http://schemas.google.com/g/2005#kind"', 
+              ' term="http://schemas.google.com/docs/2007#', docType, '"/>',
+              starred ? starCat : '',
+              '<title>', docTitle, '</title>',
+              '</entry>'].join('');
+  return atom;
+};
+
+/**
  * A helper for constructing the body of a mime-mutlipart HTTP request.
  * @param {string} title A title for the new document.
  * @param {string} docType The type of document to create.
@@ -12,18 +38,11 @@
  * @param {boolean?} opt_starred Whether the document should be starred.
  * @return {string} The Atom xml as a string.
  */
-gdocs.constructContentBody_ = function(title, docType, body, contentType, opt_starred) {
+function constructContentBody_(title, docType, body, contentType, opt_starred) {
   var body_ = ['--END_OF_PART\r\n',
               'Content-Type: application/atom+xml;\r\n\r\n',
               gdocs.constructAtomXml_(title, docType, opt_starred), '\r\n',
               '--END_OF_PART\r\n',
-              'Content-Type: ', contentType, '\r\n\r\n',
-              body, '\r\n',
-              '--END_OF_PART--\r\n'].join('');
-  return body_;
-};
-gdocs.constructContent_ = function(body, contentType) {
-  var body_ = ['--END_OF_PART\r\n',
               'Content-Type: ', contentType, '\r\n\r\n',
               body, '\r\n',
               '--END_OF_PART--\r\n'].join('');
@@ -34,7 +53,7 @@ gdocs.constructContent_ = function(body, contentType) {
  * Creates a new document in Google Docs.
  * docType= {document,presentation,spreadsheet}
  */
-gdocs.createDoc = function(title, content, starred, docType, cb) {
+function createDoc(title, content, starred, docType, cb) {
   if (!title) {
     return;
   }
@@ -56,20 +75,5 @@ gdocs.createDoc = function(title, content, starred, docType, cb) {
                                         DEFAULT_MIMETYPES[docType], starred)
   };
 
-  // Presentation can only be created from binary content. Instead, create a
-  // blank presentation.
-  if (docType === 'presentation') {
-    params['headers']['Content-Type'] = DEFAULT_MIMETYPES['atom'];
-    params['body'] = gdocs.constructAtomXml_(title, docType, starred);
-  }
-
   sendSignedRequest(DOCLIST_FEED, handleSuccess, params);
 };
-
-
-
-function sendSignedRequest(url, cb, params){
-	params=params||{};
-	//params.method= 'GET';
-	oauth_sign('gdocs',cb, url, params);
-} 
